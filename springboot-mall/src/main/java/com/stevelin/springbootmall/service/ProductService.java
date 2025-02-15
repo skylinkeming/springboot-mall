@@ -6,4 +6,5 @@ import com.stevelin.springbootmall.model.Product;
 public interface ProductService {
     Product getProductById(int id);
     Integer createProduct(ProductRequest product);
+    void updateProduct(int id, ProductRequest product);
 }
