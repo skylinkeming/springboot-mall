@@ -2,6 +2,7 @@ package com.stevelin.springbootmall.service.impl;
 
 import com.stevelin.springbootmall.constant.ProductCategory;
 import com.stevelin.springbootmall.dao.ProductDao;
+import com.stevelin.springbootmall.dto.ProductQueryParams;
 import com.stevelin.springbootmall.dto.ProductRequest;
 import com.stevelin.springbootmall.model.Product;
 import com.stevelin.springbootmall.service.ProductService;
@@ -16,8 +17,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductDao productDao;
 
     @Override
-    public List<Product> getProducts(ProductCategory category, String search) {
-        return productDao.getProducts(category, search);
+    public List<Product> getProducts(ProductQueryParams productQueryParams) {
+        return productDao.getProducts(productQueryParams);
     }
 
     @Override

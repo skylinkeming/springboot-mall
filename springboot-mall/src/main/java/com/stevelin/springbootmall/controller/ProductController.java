@@ -1,6 +1,7 @@
 package com.stevelin.springbootmall.controller;
 
 import com.stevelin.springbootmall.constant.ProductCategory;
+import com.stevelin.springbootmall.dto.ProductQueryParams;
 import com.stevelin.springbootmall.dto.ProductRequest;
 import com.stevelin.springbootmall.model.Product;
 import com.stevelin.springbootmall.service.ProductService;
@@ -22,7 +23,11 @@ public class ProductController {
             @RequestParam(required = false) ProductCategory category,
             @RequestParam(required = false) String search
     ) {
-        List<Product> productList = productService.getProducts(category,search);
+        ProductQueryParams productQueryParams = new ProductQueryParams();
+        productQueryParams.setCategory(category);
+        productQueryParams.setSearch(search);
+
+        List<Product> productList = productService.getProducts(productQueryParams);
         return new ResponseEntity<>(productList, HttpStatus.OK);
 
     }
