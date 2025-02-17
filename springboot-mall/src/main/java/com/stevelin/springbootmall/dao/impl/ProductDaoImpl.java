@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 @Component
 public class ProductDaoImpl implements ProductDao {
     @Autowired
@@ -38,6 +39,7 @@ public class ProductDaoImpl implements ProductDao {
                 " FROM product WHERE 1=1";
         Map<String, Object> map = new HashMap<>();
 
+        //查詢條件
         if (productQueryParams.getCategory() != null) {
             sql = sql + " AND category = :category";
             map.put("category", productQueryParams.getCategory().name());
@@ -46,9 +48,35 @@ public class ProductDaoImpl implements ProductDao {
             sql = sql + " AND product_name LIKE :search";
             map.put("search", "%" + productQueryParams.getSearch() + "%");
         }
+
+        // 排序
+        // 注意 jdbc的Order By 語法只能透過string拼接 無法透過map去加上去
         sql = sql + " ORDER BY " + productQueryParams.getOrderBy() + " " + productQueryParams.getSort();
 
+        //分頁
+        sql = sql + " LIMIT :limit OFFSET :offset";
+        map.put("limit", productQueryParams.getLimit());
+        map.put("offset", productQueryParams.getOffset());
+
         return jdbcTemplate.query(sql, map, new ProductRowMapper());
+    }
+
+    @Override
+    public Integer countProduct(ProductQueryParams productQueryParams) {
+        String sql = "SELECT count(*) FROM product WHERE 1=1";
+        Map<String, Object> map = new HashMap<>();
+        if (productQueryParams.getCategory() != null) {
+            sql = sql + " AND category = :category";
+            map.put("category", productQueryParams.getCategory().name());
+        }
+        if (productQueryParams.getSearch() != null) {
+            sql = sql + " AND product_name LIKE :search";
+            map.put("search", "%" + productQueryParams.getSearch() + "%");
+        }
+
+        Integer count = jdbcTemplate.queryForObject(sql, map, Integer.class);
+
+        return count;
     }
 
     @Override
