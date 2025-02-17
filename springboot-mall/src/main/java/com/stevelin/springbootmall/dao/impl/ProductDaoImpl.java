@@ -1,23 +1,16 @@
 package com.stevelin.springbootmall.dao.impl;
 
-import com.stevelin.springbootmall.constant.ProductCategory;
 import com.stevelin.springbootmall.dao.ProductDao;
 import com.stevelin.springbootmall.dto.ProductQueryParams;
 import com.stevelin.springbootmall.dto.ProductRequest;
 import com.stevelin.springbootmall.model.Product;
 import com.stevelin.springbootmall.rowMapper.ProductRowMapper;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -29,8 +22,6 @@ import java.util.Map;
 public class ProductDaoImpl implements ProductDao {
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
-    @Autowired
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     public List<Product> getProducts(ProductQueryParams productQueryParams) {
@@ -40,14 +31,7 @@ public class ProductDaoImpl implements ProductDao {
         Map<String, Object> map = new HashMap<>();
 
         //查詢條件
-        if (productQueryParams.getCategory() != null) {
-            sql = sql + " AND category = :category";
-            map.put("category", productQueryParams.getCategory().name());
-        }
-        if (productQueryParams.getSearch() != null) {
-            sql = sql + " AND product_name LIKE :search";
-            map.put("search", "%" + productQueryParams.getSearch() + "%");
-        }
+        sql = addFilteringSql(sql, map, productQueryParams);
 
         // 排序
         // 注意 jdbc的Order By 語法只能透過string拼接 無法透過map去加上去
@@ -65,14 +49,8 @@ public class ProductDaoImpl implements ProductDao {
     public Integer countProduct(ProductQueryParams productQueryParams) {
         String sql = "SELECT count(*) FROM product WHERE 1=1";
         Map<String, Object> map = new HashMap<>();
-        if (productQueryParams.getCategory() != null) {
-            sql = sql + " AND category = :category";
-            map.put("category", productQueryParams.getCategory().name());
-        }
-        if (productQueryParams.getSearch() != null) {
-            sql = sql + " AND product_name LIKE :search";
-            map.put("search", "%" + productQueryParams.getSearch() + "%");
-        }
+
+        sql = addFilteringSql(sql, map, productQueryParams);
 
         Integer count = jdbcTemplate.queryForObject(sql, map, Integer.class);
 
@@ -149,4 +127,15 @@ public class ProductDaoImpl implements ProductDao {
     }
 
 
+    private String addFilteringSql(String sql, Map<String, Object> map, ProductQueryParams productQueryParams) {
+        if (productQueryParams.getCategory() != null) {
+            sql = sql + " AND category = :category";
+            map.put("category", productQueryParams.getCategory().name());
+        }
+        if (productQueryParams.getSearch() != null) {
+            sql = sql + " AND product_name LIKE :search";
+            map.put("search", "%" + productQueryParams.getSearch() + "%");
+        }
+        return sql;
+    }
 }
