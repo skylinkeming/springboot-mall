@@ -4,13 +4,25 @@ import com.stevelin.springbootmall.dao.UserDao;
 import com.stevelin.springbootmall.dto.UserRegisterRequest;
 import com.stevelin.springbootmall.model.User;
 import com.stevelin.springbootmall.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private final static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     @Autowired
     private UserDao userDao;
+
+    @Override
+    public User getUserByEmail(String email) {
+        return userDao.getUserByEmail(email);
+    }
 
     @Override
     public User getUserById(Integer userId) {
@@ -19,6 +31,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Integer register(UserRegisterRequest userRegisterRequest) {
+        // 檢查註冊的email
+        User user = userDao.getUserByEmail(userRegisterRequest.getEmail());
+
+        if (user != null) {
+            logger.warn("該 email {} 已經被註冊", userRegisterRequest.getEmail());
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        // 創建帳號
         Integer userId = userDao.createUser(userRegisterRequest);
         return userId;
     }
