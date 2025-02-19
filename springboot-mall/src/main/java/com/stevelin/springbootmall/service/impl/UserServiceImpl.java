@@ -1,6 +1,7 @@
 package com.stevelin.springbootmall.service.impl;
 
 import com.stevelin.springbootmall.dao.UserDao;
+import com.stevelin.springbootmall.dto.UserLoginRequest;
 import com.stevelin.springbootmall.dto.UserRegisterRequest;
 import com.stevelin.springbootmall.model.User;
 import com.stevelin.springbootmall.service.UserService;
@@ -42,5 +43,22 @@ public class UserServiceImpl implements UserService {
         // 創建帳號
         Integer userId = userDao.createUser(userRegisterRequest);
         return userId;
+    }
+
+    @Override
+    public User login(UserLoginRequest userLoginRequest) {
+
+        User user = userDao.getUserByEmail(userLoginRequest.getEmail());
+        if (user == null) {
+            logger.warn("該email: {} 尚未註冊", userLoginRequest.getEmail());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        if(user.getPassword().equals(userLoginRequest.getPassword())) {
+            return user;
+        } else {
+            logger.warn("email {} 的密碼不正確", userLoginRequest.getEmail());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
     }
 }
