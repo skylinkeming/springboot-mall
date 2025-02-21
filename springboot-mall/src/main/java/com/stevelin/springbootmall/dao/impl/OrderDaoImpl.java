@@ -1,9 +1,11 @@
 package com.stevelin.springbootmall.dao.impl;
 
 import com.stevelin.springbootmall.dao.OrderDao;
+import com.stevelin.springbootmall.model.Order;
 import com.stevelin.springbootmall.model.OrderItem;
+import com.stevelin.springbootmall.rowMapper.OrderItemRowMapper;
+import com.stevelin.springbootmall.rowMapper.OrderRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -19,6 +21,37 @@ import java.util.Map;
 public class OrderDaoImpl implements OrderDao {
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
+
+
+    @Override
+    public List<OrderItem> getOrderItemsByOrderId(Integer orderId) {
+        String sql = "SELECT oi.order_item_id, oi.order_id, oi.product_id, oi.quantity, oi.amount, p.product_name, p.image_url "+
+                "FROM order_item AS oi "+
+                "LEFT JOIN product as p ON oi.product_id = p.product_id " +
+                "WHERE oi.order_id = :orderId";
+        Map<String, Object> map = new HashMap<>();
+        map.put("orderId", orderId);
+
+        List<OrderItem> orderItemList = jdbcTemplate.query(sql, map, new OrderItemRowMapper());
+
+        return orderItemList;
+    }
+
+    @Override
+    public Order getOrderById(Integer orderId) {
+        String sql = "select order_id, user_id, total_amount, created_date, last_modified_date FROM `order` WHERE order_id = :orderId";
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("orderId", orderId);
+
+        List<Order> orderList = jdbcTemplate.query(sql, map, new OrderRowMapper());
+
+        if (orderList != null && orderList.size() > 0) {
+            return orderList.get(0);
+        }
+
+        return null;
+    }
 
     @Override
     public Integer createOrder(Integer userId, Integer totalAmount) {
